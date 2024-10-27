@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./loginModalStyle.css"
-import { useLogin } from "../../../hooks/login/useLogin";
+import { useLogin } from "../../../hooks/fakeBackend/useFakeLogin";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginModal({setIsModalLoginOpen}) {
@@ -23,7 +23,7 @@ export default function LoginModal({setIsModalLoginOpen}) {
 
         setError("");
         try {
-            await login(userData); // Aguarda o login ser processado
+            login(userData); // Aguarda o login ser processado
         } catch (err) {
             console.log(error || err); // Captura e exibe erros
         }
@@ -51,7 +51,7 @@ export default function LoginModal({setIsModalLoginOpen}) {
                         <input type="password" name="senha" onChange={(e) => setSenha(e.target.value)} required />
                     </label>
                     
-                    {error && <p className="error-message">Não doi possível editar os dados</p>}
+                    {error && <p className="error-message">{error}</p>}
                     <div className="button-area">
                         <button onClick={handleClose}>cancel</button>
                         {!loading ?
