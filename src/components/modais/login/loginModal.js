@@ -1,67 +1,110 @@
 import { useEffect, useState } from "react";
-import "./loginModalStyle.css"
+import "./loginModalStyle.css";
 import { useLogin } from "../../../hooks/fakeBackend/useFakeLogin";
 import { useNavigate } from "react-router-dom";
 
-export default function LoginModal({setIsModalLoginOpen}) {
-
+export default function LoginModal({ setIsModalLoginOpen }) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
-    const {login, data, loading, error, setError} = useLogin();
+    const { login, correctLogin, loading, error, setError } = useLogin();
     const navigate = useNavigate();
 
-
+    const [emailError, setEmailError] = useState("");
+    const [senhaError, setSenhaError] = useState("");
+    const [requestError, setRequestError] = useState("");
 
     function handleClose() {
         setIsModalLoginOpen(false);
     }
 
+    function validateEmailFormat(email) {
+        // Regex para validar o formato de e-mail
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function validateFields() {
+        let isValid = true;
+        setEmailError("");
+        setSenhaError("");
+        setRequestError("");
+
+        if (!email) {
+            setEmailError("Digite um email");
+            isValid = false;
+        } else if (!validateEmailFormat(email)) {
+            setEmailError("Formato de email inválido");
+            isValid = false;
+        }
+
+        if (!senha) {
+            setSenhaError("Digite uma senha");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
     async function handleLogin(e) {
-        e.preventDefault()
+        e.preventDefault();
 
-        let userData = {email, senha};
+        if (!validateFields()) return;
 
-        setError("");
+        const userData = { email, senha };
+
         try {
-            login(userData); // Aguarda o login ser processado
+            await login(userData);
         } catch (err) {
-            console.log(error || err); // Captura e exibe erros
+            setRequestError("Erro ao tentar fazer login. Tente novamente.");
+            console.log(error || err);
         }
     }
 
     useEffect(() => {
-        if (data) {
-            navigate("/user"); // Redireciona se login bem-sucedido
+        if (correctLogin) {
+            navigate("/user");
         } else if (error) {
-            console.log("Login falhou: ", error); // Exibe erro se houver
+            setRequestError(error);
         }
-    },[data, error, navigate])
+    }, [correctLogin, error, navigate]);
 
     return (
-        <div className="login-modal__backgroud" onClick={() => {handleClose()}}>
-            <div className="login-modal__container" onClick={e => e.stopPropagation()}>
-            <div className="modal-title">
+        <div className="login-modal__background" onClick={() => handleClose()}>
+            <div className="login-modal__container" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-title">
                     <h2>Login</h2>
                 </div>
-                <form onSubmit={(e) => handleLogin(e)}>
-                    <label> email:
-                        <input type="text" name="email" onChange={(e) => setEmail(e.target.value)} required />
+                <form onSubmit={handleLogin}>
+                    <label> Email:
+                        <input 
+                            type="text" 
+                            name="email" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)} 
+                        />
+                        {emailError && <p className="error-message">{emailError}</p>}
                     </label>
-                    <label> senha:
-                        <input type="password" name="senha" onChange={(e) => setSenha(e.target.value)} required />
+
+                    <label> Senha:
+                        <input 
+                            type="password" 
+                            name="senha" 
+                            value={senha} 
+                            onChange={(e) => setSenha(e.target.value)} 
+                        />
+                        {senhaError && <p className="error-message">{senhaError}</p>}
                     </label>
-                    
-                    {error && <p className="error-message">{error}</p>}
+
+                    {requestError && <p className="error-message request-error">{requestError}</p>}
+
                     <div className="button-area">
-                        <button onClick={handleClose}>cancel</button>
-                        {!loading ?
-                            <button type="submit" >login</button>
-                        :
-                            <button type="submit" readOnly>Submitting</button>
-                        }
+                        <button type="button" onClick={handleClose}>Cancelar</button>
+                        <button type="submit" disabled={loading}>
+                            {!loading ? "Login" : "Submitting"}
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 }
