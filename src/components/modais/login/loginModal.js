@@ -69,7 +69,7 @@ export default function LoginModal({ setIsModalLoginOpen }) {
     }, [correctLogin, error, navigate]);
 
     return (
-        <div className="login-modal__background" onClick={() => handleClose()}>
+        <div className="login-modal__backgroud" onClick={() => handleClose()}>
             <div className="login-modal__container" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-title">
                     <h2>Login</h2>
